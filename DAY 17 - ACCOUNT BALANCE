@@ -1,0 +1,72 @@
+DAY 17 - Account Balance
+
+You are given a list of users and their opening account balance along with the trasaction done by them. Write a SQL to calculate their account balance at the end of all the transactions. Please note that users can do transactions among themselves as well. 
+
+Table: users(primary key : user_id)
+
+column name	datatype
+user_id 	int
+username 	varchar(10)
+opening_balance 	int
+ 
+Table: transactions (primary key : id)
+column name	datatype
+id	int
+from_userid 	int
+to_userid  	int
+amount 	int
+ 
+Expected Output:
+user_id	final_balance
+Ankit	  2000
+Rahul	  10200
+Amit	  2800
+Agam	  7500
+
+SOLUTION:
+
+WITH UserOpeningBalance AS
+(
+    SELECT 
+        DISTINCT user_id,
+        username,
+        opening_balance
+    FROM users
+    LEFT JOIN transactions
+    ON user_id = from_userid
+),
+CreditBalance AS
+(
+    SELECT 
+        username,
+        CASE
+            WHEN user_id = to_userid THEN opening_balance + SUM(amount)
+            ELSE opening_balance
+        END AS credit_balance
+    FROM UserOpeningBalance
+    LEFT JOIN transactions t
+    ON user_id = to_userid
+    GROUP BY username
+),
+DebitBalance AS
+(
+    SELECT 
+    user_id,
+    username,
+    opening_balance,
+    CASE
+        WHEN user_id = from_userid THEN opening_balance - SUM(amount)
+        ELSE opening_balance
+    END AS debit_balance
+FROM UserOpeningBalance upb
+LEFT JOIN transactions 
+ON user_id = from_userid
+GROUP BY user_id
+)
+
+SELECT 
+    db.username AS user_id,
+    (credit_balance + debit_balance - db.opening_balance) AS final_balance
+FROM DebitBalance db
+JOIN CreditBalance cb
+ON db.username = cb.username;
