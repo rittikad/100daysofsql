@@ -1,4 +1,4 @@
-# 100daysofsql
+# 100 days of sql
 Course Name: 100 Days of SQL
 Creator: Ankit Bansal (Famous YouTuber)
 Description:
