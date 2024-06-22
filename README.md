@@ -30,3 +30,6 @@ Real-world SQL scenarios and interview-style questions
 Accessible through the creator's YouTube channel or designated platform
 Additional Resources:
 Participants may find supplementary resources, such as explanatory videos or community support, on Ankit Bansal's YouTube channel or associated platforms.
+Link to NamasteSQL website where you can purchase various courses: https://www.namastesql.com/
+Link to Ankit Bansal Youtube Channel: https://www.youtube.com/user/1988ankitbansal
+Link to Ankit Bansal's LinkedIn Profile : https://www.linkedin.com/in/ankitbansal6/
