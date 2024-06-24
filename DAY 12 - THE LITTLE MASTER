@@ -1,0 +1,38 @@
+Sachin Tendulkar - Also known as little master. You are given runs scored by Sachin in his first 10 matches. You need to write an SQL to get match number when he completed 500 runs and his batting average at the end of 10 matches.
+
+Batting Average = (Total runs scored) / (no of times batsman got out)
+Round the result to 2 decimal places.
+
+Table: sachin(primary key : match_no)
+column name	datatype
+match_no	   int
+runs_scored	   int
+status	        varchar(10) 
+
+Expected Output:
+match_no	batting_average
+8	        70.33
+
+SOLUTION:
+
+WITH TheLittleMaster AS
+(
+    SELECT
+        match_no,
+        SUM(runs_scored) OVER(ORDER BY match_no) AS running_total,
+        (SELECT ROUND(SUM(runs_scored) * 1.0 /
+        SUM
+        (
+            CASE
+                WHEN status = 'out' THEN 1
+                ELSE 0
+            END
+        ) ,2) FROM sachin) AS batting_average
+    FROM sachin
+)
+
+SELECT
+    match_no,
+    batting_average
+FROM TheLittleMaster
+WHERE running_total BETWEEN 500 and 600;

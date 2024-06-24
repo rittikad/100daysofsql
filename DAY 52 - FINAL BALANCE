@@ -1,0 +1,65 @@
+52 - Final Balance
+
+You are given history of your bank account for the year 2020, each transaction was either a credit card payment or incoming transfer. 
+There is a fee of holding a credit card which you have to pay every month, fee is 5 per month. 
+
+However you are not charged for a given month if you made atleast 2 credit card payments for a cost of atleast 100 within that month. 
+Note that this fee is not included in the supplied history of transactions.
+
+You are given transactions with the follwing structure:
+Table : Transactions 
+Columns : amount int , transaction_date date
+
+Each row in the table contains information about a single transaction. 
+If the amount value is negative , it is a credit card payment otherwise it is an incoming transfer.
+At the beginning of the year, the balance of your account was 0 . Your task is to compute the balance at the end of the year. 
+
+Expected Output:
+final_balance
+-95
+
+SOLUTION:
+
+WITH TransactionCalculation AS
+(
+    SELECT
+       strftime('%m',transaction_date),
+       transaction_date,
+        SUM
+        (
+            CASE
+                WHEN amount < 0 THEN 1
+                ELSE 0
+            END
+        ) AS credit_card_amount_count,
+        SUM
+        (
+            CASE
+                WHEN amount < 0 THEN amount
+                ELSE 0
+            END
+        ) AS credit_card_amount,
+        SUM
+        (
+            CASE
+                WHEN amount > 0 THEN amount
+                ELSE 0
+            END
+        ) AS transfer_money
+    FROM Transactions
+    GROUP BY 1
+),
+FinalBalance AS
+(
+    SELECT 
+        COUNT(strftime('%m', transaction_date)) AS no_of_months,
+        SUM(CASE
+            WHEN credit_card_amount_count > 1 AND credit_card_amount >= -100 THEN credit_card_amount + transfer_money
+            ELSE credit_card_amount + transfer_money - 5
+        END) AS final_bal
+    FROM TransactionCalculation
+)
+
+SELECT 
+    final_bal - 5*(12 - no_of_months) AS final_balance
+FROM FinalBalance;
