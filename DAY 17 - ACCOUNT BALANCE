@@ -11,10 +11,10 @@ opening_balance 	int
  
 Table: transactions (primary key : id)
 column name	datatype
-id	int
+id	  int
 from_userid 	int
 to_userid  	int
-amount 	int
+amount 	 int
  
 Expected Output:
 user_id	final_balance
