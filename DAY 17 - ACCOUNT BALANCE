@@ -7,14 +7,14 @@ Table: users(primary key : user_id)
 column name	datatype
 user_id 	int
 username 	varchar(10)
-opening_balance 	int
+opening_balance int
  
 Table: transactions (primary key : id)
 column name	datatype
-id	  int
+id	   int
 from_userid 	int
-to_userid  	int
-amount 	 int
+to_userid  	 int
+amount 	  int
  
 Expected Output:
 user_id	final_balance
