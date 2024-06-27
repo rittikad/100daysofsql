@@ -1,0 +1,51 @@
+56 - Most Visited Floor
+
+You are a facilities manager at a corporate office building, responsible for tracking employee visits, floor preferences, and resource usage within the premises. The office building has multiple floors, each equipped with various resources such as desks, computers, monitors, and other office supplies.
+
+You have a database table named entries that stores information about employee visits to the office building. Each record in the table represents a visit by an employee and includes details such as their name, the floor they visited, and the resources they used during their visit.
+
+Input Table: entries:
+emp_name	address		floor	resources
+Ankit		Bangalore	1	CPU
+Ankit		Bangalore	1	CPU
+Ankit		Bangalore	2	DESKTOP
+Bikaas		Bangalore	2	DESKTOP
+Bikaas		Bangalore	2	DESKTOP
+Bikaas		Bangalore	1	MONITOR
+ 
+Write an SQL query to retrieve the total visits, most visited floor, and resources used by each employee.
+Expected Output:
+emp_name	total_visits	most_visited_floor	resources_used
+Ankit	         3	         1	         	CPU,DESKTOP
+Bikaas	         3	         2	         	DESKTOP,MONITOR
+
+SOLUTION:
+WITH TotalVisits AS
+(
+    SELECT
+    emp_name,
+    GROUP_CONCAT(DISTINCT resources) AS resources_used,
+    COUNT(*) AS total_visits
+FROM entries
+GROUP BY emp_name
+),
+MostVisitedFloor AS 
+(
+    SELECT
+    emp_name,
+    floor,
+    COUNT(*) AS total_visits_per_floor
+FROM entries
+GROUP BY emp_name, floor
+)
+SELECT
+    mvf.emp_name,
+    total_visits,
+    CASE 
+        WHEN MAX(total_visits_per_floor) THEN floor
+    END AS most_visited_floor,
+    resources_used
+FROM TotalVisits tv
+JOIN MostVisitedFloor mvf
+ON tv.emp_name = mvf.emp_name
+GROUP BY mvf.emp_name

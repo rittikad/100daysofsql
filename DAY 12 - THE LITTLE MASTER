@@ -1,3 +1,5 @@
+12 - The Little Master
+
 Sachin Tendulkar - Also known as little master. You are given runs scored by Sachin in his first 10 matches. You need to write an SQL to get match number when he completed 500 runs and his batting average at the end of 10 matches.
 
 Batting Average = (Total runs scored) / (no of times batsman got out)
