@@ -1,4 +1,4 @@
-DAY 17 - Account Balance
+17 - Account Balance
 
 You are given a list of users and their opening account balance along with the trasaction done by them. Write a SQL to calculate their account balance at the end of all the transactions. Please note that users can do transactions among themselves as well. 
 
