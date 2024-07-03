@@ -1,0 +1,54 @@
+67 - Email Confirmation Rate
+
+In the realm of user authentication and account verification, email confirmation plays a pivotal role in ensuring the security and validity of user accounts. Analyzing the efficiency of email confirmation processes provides insights into user engagement and the effectiveness of onboarding strategies.
+
+You are tasked with analyzing the email confirmation process of a web application to determine the percentage of users who confirm their email addresses on the same day of registration, the next day, beyond next day and never confirmed.
+
+Round the result to 2 decimal places and sort by confirmation percent in descending order.
+
+Tables:
+user_registration (user_id, registration_date)
+email_confirmation (user_id, confirmation_date)
+
+Expected Output:
+confirm_category	percent_of_total
+same day confirm	36.36
+beyond next day confirm	27.27
+not confirmed	        18.18
+next day confirm	18.18
+
+SOLUTION:
+
+WITH EmailConfirmationRate AS 
+(
+    SELECT 
+    ur.user_id,
+    CASE
+        WHEN registration_date IS NOT NULL AND confirmation_date IS NULL THEN 'not confirmed'
+        WHEN registration_date = confirmation_date THEN 'same day confirm'
+        WHEN JULIANDAY(confirmation_date) - JULIANDAY(registration_date) = 1 THEN 'next day confirm'
+        ELSE 'beyond next day confirm'
+    END AS confirm_category,
+    SUM
+    (
+        CASE
+            WHEN registration_date IS NOT NULL AND confirmation_date IS NULL THEN 1
+            WHEN registration_date = confirmation_date THEN 1
+            WHEN JULIANDAY(confirmation_date) - JULIANDAY(registration_date) = 1 THEN 1
+            ELSE 1
+        END
+    ) AS total,
+    registration_date,
+    confirmation_date,
+    (SELECT COUNT(user_id) FROM user_registration) AS total_count_of_users
+FROM user_registration ur
+LEFT JOIN email_confirmation ec
+ON ur.user_id = ec.user_id
+GROUP BY 1
+)
+SELECT
+    confirm_category,
+    ROUND(SUM(total) * 100.0 / total_count_of_users,2) AS percent_of_total
+FROM EmailConfirmationRate
+GROUP BY confirm_category
+ORDER BY percent_of_total DESC;
