@@ -1,0 +1,52 @@
+69 - On Time Delivery
+
+Zomato introduced an "on-time delivery" policy where they refund the total order amount or 200 rupees, whichever is lower, in case of late delivery. Additionally, customers have the option to choose whether they want the refund for late orders or if they are okay with the delay and do not want any refund.
+
+Write a SQL query to calculate the return percent revenue and on time order delivery percent for Zomato for each city, considering the refund policy and customer preferences. Round the percentages to 2 decimal places.
+
+Table: orders (primary key : order_id)
+ColumnName	      DataType
+order_id	        INT
+city	              VARCHAR(50)
+actual_delivery_time	INT
+expected_delivery_time  INT
+order_amount	        INT
+customer_preference   VARCHAR(20)
+ 
+
+Expected Output:
+city	return_amount_percent	ontime_orders_percent
+Delhi	25.0	                20.0
+Mumbai	30.23	                40.0
+
+SOLUTION:
+
+WITH TotalOrdersPerCity AS
+(
+    SELECT
+        city,
+        SUM
+        (
+            CASE
+                WHEN actual_delivery_time <= expected_delivery_time THEN 1
+            END
+        ) AS ontime_orders,
+        SUM
+        (
+            CASE
+                WHEN actual_delivery_time > expected_delivery_time AND 
+                customer_preference = 'refund' THEN(CASE WHEN order_amount > 200 THEN 200 ELSE order_amount END)
+                ELSE 0
+            END
+        ) AS return_amount,
+        SUM(order_amount) AS total_order_amount_per_city,
+        COUNT(city) AS total_orders_per_city
+    FROM orders
+    GROUP BY city
+)
+SELECT
+    city,
+    ROUND(return_amount * 100.0 / total_order_amount_per_city,2) AS return_amount_percent,
+    ROUND(ontime_orders * 100.0 / total_orders_per_city,2) AS ontime_orders_percent
+    FROM TotalOrdersPerCity
+    GROUP BY city;
