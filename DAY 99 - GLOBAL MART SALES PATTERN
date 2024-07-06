@@ -1,0 +1,44 @@
+99 - Global Mart Sales Pattern
+
+You are tasked with analyzing the sales data of a Global Mart store chain with multiple stores across different locations. The company wants to identify the highest and lowest sales months for each location for the year 2023 to gain insights into their sales patterns. In case of a tie display the latest month. 
+
+Tables: 
+transactions (transaction_id, customer_id, store_id, transaction_date, amount)
+stores (store_id, store_name, location)
+
+Expected Output:
+location	highest_sales_month	lowest_sales_month
+Chicago	        2023-01	                2023-02
+Los Angeles	2023-12	                2023-02
+New York	2023-12	                2023-04
+
+SOLUTION:
+
+WITH GlobalMartSalesPattern AS 
+(
+    SELECT 
+        location,
+        CONCAT(strftime('%Y', transaction_date), '-', strftime('%m', transaction_date)) AS sales_month,
+        DENSE_RANK() OVER(PARTITION BY location ORDER BY SUM(amount) DESC) AS highest_sales_ranking,
+        DENSE_RANK() OVER(PARTITION BY location ORDER BY SUM(amount) ASC) AS lowest_sales_ranking
+    FROM transactions t
+    JOIN stores s
+    ON t.store_id = s.store_id
+    GROUP BY location, sales_month
+)
+SELECT 
+    location,
+    MAX
+    (
+        CASE 
+            WHEN highest_sales_ranking = 1 THEN sales_month
+        END
+    ) AS highest_sales_month, 
+    MAX
+    (
+        CASE 
+            WHEN lowest_sales_ranking = 1 THEN sales_month
+        END
+    ) AS lowest_sales_month
+    FROM GlobalMartSalesPattern
+    GROUP BY location;

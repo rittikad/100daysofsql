@@ -1,0 +1,52 @@
+100 - Seasonal Trends
+
+You're working for a retail company that sells various products. The company wants to identify seasonal trends in sales for its top-selling products across different regions. They are particularly interested in understanding the variation in sales volume across seasons for these products.
+
+For each top-selling product in each region, calculate the total quantity sold for each season (spring, summer, autumn, winter) in 2023.
+
+Tables: products (product_id, product_name)
+sales (sale_id, product_id, region_name, sale_date, quantity_sold)
+seasons (season_name, start_date, end_date)
+
+Expected Output:
+region_name	product_name	season_name	total_quantity_sold
+Asia	         Oranges	Autumn	        1150
+Asia	         Oranges	Spring	        620
+Asia	         Oranges	Summer	        730
+Asia	         Oranges	Winter	        460
+Europe	         Bananas	Autumn	        680
+Europe	         Bananas	Spring	        330
+Europe	         Bananas	Summer	        450
+Europe	         Bananas	Winter	        220
+North America	 Apples	        Autumn	        930
+North America	 Apples	        Spring	        420
+North America	 Apples	        Summer	        620
+North America	 Apples	        Winter	        450
+
+SOLUTION:
+
+WITH SeasonalTrends AS
+(
+    SELECT
+    region_name,
+    product_name,
+    SUM(quantity_sold) AS total_quantity_sold_per_region,
+    DENSE_RANK() OVER(PARTITION BY region_name, product_name ORDER BY SUM(quantity_sold) DESC) AS selling_products_ranking
+FROM products p
+JOIN sales s
+ON p.product_id = s.product_id
+GROUP BY region_name, product_name
+)
+
+SELECT
+    st.region_name,
+    product_name,
+    season_name,
+    SUM(quantity_sold) AS total_quantity_sold
+FROM SeasonalTrends st
+JOIN sales s
+ON st.region_name = s.region_name
+JOIN seasons
+ON s.sale_date >= start_date AND s.sale_date <= end_date
+WHERE selling_products_ranking = 1
+GROUP BY st.region_name, product_name, season_name;
