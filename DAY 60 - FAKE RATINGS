@@ -1,0 +1,41 @@
+60 - Fake Ratings
+
+As an analyst at Amazon, you are responsible for ensuring the integrity of product ratings on the platform. Fake ratings can distort the perception of product quality and mislead customers. To maintain trust and reliability, you need to identify potential fake ratings that deviate significantly from the average ratings for each product.
+
+Write an SQL query to identify the single rating that is farthest (in absolute value) from the average rating value for each product.
+
+Table : product_ratings (primary key:rating_id)
+column name	datatype
+rating_id	int
+product_id 	int
+user_id 	int
+rating 	        decimal(2,1)
+ 
+Expected Output:
+rating_id	product_id	user_id	  rating
+5	        101	        1005	    3.2
+6	        102	        1006	    4.7
+
+SOLUTION:
+
+WITH AverageRating AS 
+(
+    SELECT
+        rating_id,
+        product_id,
+        user_id,
+        rating,
+        ROUND(AVG(rating) OVER(PARTITION BY product_id ORDER BY product_id),1) AS avg_rating,
+        ABS(ROUND(AVG(rating) OVER(PARTITION BY product_id ORDER BY product_id),1) - rating) AS fake_rating
+FROM product_ratings
+)
+
+SELECT 
+    rating_id,
+    product_id,
+    user_id,
+    CASE
+        WHEN MAX(fake_rating) THEN rating 
+    END AS rating
+FROM AverageRating
+GROUP BY product_id;
