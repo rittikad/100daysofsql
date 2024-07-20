@@ -14,7 +14,6 @@ sales	        int
  
 Example Input:
 
-orders
 order_id	order_date	customer_name	sales
 1	        2023-01-01	Alexa	        1239
 2	        2023-01-02	Alexa	        1239

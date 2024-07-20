@@ -1,0 +1,46 @@
+20 - Income Tax Returns
+
+Income tax returns are supposed to file every year before due date announce by govt every year . Goverment wants to find out people who have filed late returns or people who have completely skipped filing returns. 
+
+Write an SQL to list all the users along with the year for which they have done late filing or missed filing the returns. Create a comment column as well specifying if its a 'late return' or  'missed'.
+
+Table: income_tax_dates(primary key : financial_year)
+column name	datatype
+financial_year 	varchar(4)
+file_start_date date
+file_due_date 	date
+
+Table: users (primary key : user_id,financial_year)
+column name	 datatype
+user_id 	 int
+financial_year 	 varchar(4)
+return_file_date date
+
+Expected Output:
+user_id	financial_year	comment
+1	FY21	        late return
+1	FY22	        missed
+2	FY23	        late return
+
+SOLUTION:
+WITH FinancialYears AS
+(
+    SELECT
+        DISTINCT user_id,
+        itd.financial_year,
+        file_due_date
+    FROM Users u
+    CROSS JOIN income_tax_dates itd
+)
+
+SELECT
+    fy.user_id,
+    fy.financial_year,
+    CASE
+        WHEN return_file_date > file_due_date THEN 'late return'
+        WHEN return_file_date IS NULL THEN 'missed'
+    END AS comment
+FROM FinancialYears fy
+LEFT JOIN Users u
+ON fy.user_id = u.user_id AND fy.financial_year = u.financial_year
+WHERE comment IS NOT NULL;
