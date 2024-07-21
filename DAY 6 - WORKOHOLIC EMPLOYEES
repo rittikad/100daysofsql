@@ -1,0 +1,53 @@
+6 - Workaholics Employees
+
+Write a query to find workaholics employees.  Workaholics employees are those who satisfy atleast one of the given criterion:
+
+1- Employees who work for more than 8 hours a day for atleast 3 days in a week. 
+
+2- Employees who work for more than 10 hours a day for atleast 2 days in a week. 
+
+You are given the login and logout timings of all the employess for a given week. Write a SQL to find all the workaholic employees along with the criterion that they are satisfying (1,2 or both).
+
+Table: employees(primary key : emp_id ,login)
+column name	data type 
+emp_id 	        int
+login 	        datetime
+logout 	        datetime
+ 
+Example Output:
+emp_id	criterian
+100	1
+200	2
+300	both
+
+SOLUTION:
+
+WITH workaholicEmployees AS
+(
+    SELECT 
+        emp_id,
+        SUM
+        (
+            CASE 
+                WHEN (strftime('%s', logout) - strftime('%s', login)) / 3600 >= 8 THEN 1
+                ELSE 0
+            END
+        ) AS cr_1,
+        SUM
+        (
+            CASE 
+                WHEN (strftime('%s', logout) - strftime('%s', login)) / 3600 >= 10 THEN 1
+                ELSE 0
+            END
+        ) AS cr_2
+    FROM employees
+    GROUP BY emp_id
+)
+SELECT 
+    emp_id,
+    CASE 
+        WHEN cr_1 > 2 AND cr_2 > 1 THEN 'both'
+        WHEN cr_1 > 2 THEN 1
+        WHEN cr_2 > 1 THEN 2
+    END AS criterian
+FROM workaholicEmployees;
