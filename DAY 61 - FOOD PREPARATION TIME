@@ -1,0 +1,29 @@
+You're analyzing the efficiency of food delivery on Zomato, focusing on the time taken by restaurants to prepare orders. Total food delivery time for an order is a combination of food preparation time + time taken by rider to deliver the order. 
+
+Write an SQL to calculate average food preparation time(in minutes) for each restaurant . Round the average to 2 decimal points and sort the output in increasing order of avg time. 
+
+Table: orders (primary key : order_id)
+column name	         datatype
+order_id	         int
+restaurant_id 	         int
+order_time	         time
+expected_delivery_time 	 time
+actual_delivery_time 	 time
+rider_delivery_mins 	 int
+ 
+Expected Output:
+
+restaurant_id	avg_food_prep_mins
+103	          27.67
+102	          28.67
+101	          29.5
+
+SOLUTION:
+
+SELECT
+    restaurant_id,
+    ROUND(AVG(ABS((julianday(actual_delivery_time)-julianday(order_time))*24*60 - rider_delivery_mins)),2) AS avg_food_prep_mins
+FROM orders
+GROUP BY restaurant_id
+ORDER BY avg_food_prep_mins;
+ 
