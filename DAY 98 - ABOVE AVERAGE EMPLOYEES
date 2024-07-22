@@ -1,0 +1,41 @@
+98 - Above Average Employees
+
+You are working as a data analyst at a tech company called "TechGuru Inc." that specializes in software development and data science solutions. The HR department has tasked you with analyzing the salaries of employees. Your goal is to identify employees who earn above the average salary for their respective job title but are not among the top 3 earners within their job title. Consider the sum of base_pay, overtime_pay and other_pay as total salary. 
+
+In case multiple employees have same total salary then ranked them based on higher base pay. Sort the output by total salary in descending order.
+
+Tables: employee (emp_id, emp_name, job_title)
+salary (emp_id, base_pay, overtime_pay, other_pay)
+
+Expected Output:
+
+emp_name	  job_title	        total_pay	base_pay	title_avg_pay
+Sophia Wilson	  Data Scientist	77700	        73300	        75720
+William Anderson  Data Scientist	76000	        71000	        75720
+Jane Smith	  Software Engineer	65000	        62000	        64250
+Kevin Davis	  Software Engineer	64700	        61000	        64250
+
+SOLUTION:
+
+WITH AboveAverageEmployees AS 
+(
+    SELECT
+        emp_name,
+        job_title,
+        base_pay + overtime_pay + other_pay AS total_pay,
+        base_pay,
+        ROW_NUMBER() OVER(PARTITION BY job_title ORDER BY base_pay + overtime_pay + other_pay DESC, base_pay DESC) AS salary_ranking,
+        ROUND(AVG(base_pay + overtime_pay + other_pay) OVER(PARTITION BY job_title)) AS title_avg_pay
+FROM employee e
+JOIN salary s
+ON e.emp_id = s.emp_id
+)
+
+SELECT 
+    emp_name,
+    job_title,
+    total_pay,
+    base_pay,
+    title_avg_pay
+FROM AboveAverageEmployees
+WHERE total_pay > title_avg_pay AND salary_ranking NOT IN (1,2,3);
