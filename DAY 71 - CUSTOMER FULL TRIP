@@ -1,0 +1,59 @@
+71 - Customer Full Trip
+
+Your task is to write a SQL query to generate a trip ID for each customer based on the hotel bookings data. In a single trip, a customer can check in and check out at multiple hotels. However, if the check-in date at a hotel is within 1 day of the previous check-out date, it will be considered as the same trip. For example in below sample data of hotelbookings table:
+
+CustomerID 	HotelID 	CheckinDate 	CheckoutDate 
+1	        101	        2024-01-01	2024-01-03
+1	        102	        2024-01-04	2024-01-06
+1	        103	        2024-01-06	2024-01-09
+1	        104	        2024-01-12	2024-01-19
+The first 3 bookings will be considered in the same trip and last booking will be a new trip.
+
+Write an SQL to genrate trip numbers starting from 1 for each customer, trip start date and trip end date.
+
+Expected Output:
+CustomerID 	trip_number	trip_start_date	  trip_end_date
+1	        1	        2024-01-01	   2024-01-09
+1	        2	        2024-01-12	   2024-01-19
+2	        1	        2024-02-01	   2024-02-06
+2	        2	        2024-02-10	   2024-02-12
+3	        1	        2024-02-09	   2024-02-13
+
+SOLUTION:
+
+WITH CustomerFullTrip AS
+(
+    SELECT 
+        CustomerID,
+        CheckinDate AS trip_start_date,
+        CheckoutDate AS trip_end_date, 
+        COUNT(*) OVER(PARTITION BY CustomerID) AS count_trips,
+        LEAD(CheckinDate) OVER(PARTITION BY CustomerID) AS lead_check_in_date
+    FROM hotelbookings
+),
+CalculateTripNumber AS
+(
+    SELECT
+        CustomerID,
+        CASE
+            WHEN lead_check_in_date -  trip_end_date <= 1 OR count_trips = 1 THEN 1
+            ELSE 2
+        END AS trip_number,
+        trip_start_date,
+        trip_end_date
+FROM CustomerFullTrip
+)
+
+SELECT
+    CustomerID,
+    trip_number,
+    CASE
+        WHEN COUNT(trip_number) > 1 THEN MIN(trip_start_date)
+        ELSE trip_start_date
+    END AS trip_start_date,
+    CASE
+        WHEN COUNT(trip_number) > 1 THEN MAX(trip_end_date)
+        ELSE trip_end_date
+    END AS trip_end_date
+FROM CalculateTripNumber
+GROUP BY CustomerID,trip_number;
