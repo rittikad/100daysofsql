@@ -1,0 +1,42 @@
+86 - Consistent Growth
+
+In a financial analysis project, you are tasked with identifying companies that have consistently increased their revenue by at least 25% every year. You have a table named revenue that contains information about the revenue of different companies over several years.
+
+Your goal is to find companies whose revenue has increased by at least 25% every year consecutively. So for example If a company's revenue has increased by 25% or more for three consecutive years but not for the fourth year, it will not be considered.
+
+Write an SQL query to retrieve the names of companies that meet the criteria mentioned above along with total lifetime revenue.
+
+Table : revenue (company_id, year, revenue)
+
+Expected Output:
+company_id	total_revenue
+1	        841250
+4	        1860000
+
+SOLUTION:
+
+WITH NextYearRevenue AS
+(
+    SELECT
+        company_id,
+        year,
+        revenue,
+        LEAD(revenue) OVER(PARTITION BY company_id) AS next_year_revenue
+FROM revenue
+),
+ConsistentGrowth AS
+(
+    SELECT
+        company_id,
+        COUNT(*) AS total_number_of_years,
+        SUM(revenue) AS total_revenue,
+        SUM(CASE WHEN (next_year_revenue - revenue) * 100 / revenue >= 25 THEN 1 ELSE 0 END) AS total_revenue_increase_by_atleast_25
+FROM NextYearRevenue
+GROUP BY company_id
+HAVING total_number_of_years = total_revenue_increase_by_atleast_25 + 1 
+)
+
+SELECT 
+   company_id,
+   total_revenue
+FROM ConsistentGrowth;
