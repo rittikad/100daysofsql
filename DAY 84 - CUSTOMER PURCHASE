@@ -1,0 +1,40 @@
+84 - Customer Purchase
+
+Suppose you are analyzing the purchase history of customers in an e-commerce platform. Your task is to identify customers who have bought different products on different dates.
+
+Write an SQL to find customers who have bought different products on different dates,  Means product purchased on a given day is not repeated on any other day by the customer. Also note that for the customer to qualify he should have made purchases on atleast 2 distinct dates. Output should contain customer id and number of products bought by the customer.
+
+Table: purchase_history (userid , productid, purchasedate )
+
+Expected Output:
+userid	cnt_products
+1	 3
+4	 2
+
+SOLUTION:
+
+WITH DistinctDates AS
+(
+    SELECT
+        userid,
+        COUNT(productid) AS cnt_products
+    FROM purchase_history
+    GROUP BY userid
+    HAVING COUNT(DISTINCT purchasedate) > 1
+),
+
+RepeatedProducts AS
+(
+    SELECT
+        userid,
+        COUNT(*) AS repeated_products
+    FROM purchase_history
+    GROUP BY userid, productid
+)
+SELECT
+    dd.userid,
+    cnt_products
+FROM DistinctDates dd
+JOIN RepeatedProducts rp
+ON dd.userid <> rp.userid
+WHERE repeated_products > 1;
