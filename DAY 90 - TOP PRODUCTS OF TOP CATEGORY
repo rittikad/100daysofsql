@@ -1,0 +1,41 @@
+90 - Top Products of Top Category
+
+You are analyzing sales data from an e-commerce platform, which includes information about orders placed for various products across different categories. Each order contains details such as the order ID, order date, product ID, category, and amount.
+
+Write an SQL to identify the top 3 products within the top-selling category based on total sales. The top-selling category is determined by the sum of the amounts sold for all products within that category. Sort the output by products sales in descending order.
+
+Table: orders (order_id, order_date, product_id, category, amount)
+
+Expected Output:
+product_id	category	total_sales
+2	        Furniture	800
+1	        Furniture	690
+4	        Furniture	500
+
+SOLUTION:
+
+WITH TopSellingCategory AS
+(
+    SELECT 
+        category,
+        SUM(amount) AS sales
+    FROM orders
+    GROUP BY category
+    ORDER BY sales DESC
+    LIMIT 1
+),
+
+TopThreeProducts AS
+(
+    SELECT 
+        product_id,
+        category,
+        SUM(amount) AS total_sales
+    FROM orders
+    WHERE category = (SELECT category FROM TopSellingCategory)
+    GROUP BY product_id
+    ORDER BY total_sales DESC
+    LIMIT 3 
+)
+
+SELECT * FROM TopThreeProducts;
