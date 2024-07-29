@@ -1,0 +1,36 @@
+13 - Trending Products
+
+Amazon wants to find out the Trending products for each month. Trending products are those for which any given month sales is more than the sum of previous 2 months sales for that product.
+
+Please note that for first 2 months of operations this metrics does not make sense. So output should start from 3rd month only.  Assume that each product has atleast 1 sales each month.
+
+Table: orders (primary key : order_month, product_id)
+column name	datatype
+order_month	date
+product_id	varchar(5)
+sales	        int
+
+Expected Output:
+order_month	product_id
+202303	        p1
+202304	        p1
+202304	        p2
+
+SOLUTION:
+
+SELECT 
+    order_month,
+    product_id
+FROM orders
+GROUP BY order_month, product_id
+HAVING SUM(sales) > 
+(SELECT 
+    SUM(sales) + 
+    (SELECT 
+        SUM(sales) 
+    FROM orders 
+    GROUP BY order_month - 2, product_id)
+FROM orders 
+GROUP BY order_month - 1) 
+AND COUNT(sales) > 0
+
