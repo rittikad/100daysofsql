@@ -1,0 +1,39 @@
+10 - Hero Products
+
+NamasteKart an ecommerce company wants to find out its top most selling product by quanity in each category. In case of a tie when quantities sold are same for more than 1 product than we need to give preference to the product with higher sales value.
+
+Table: orders (primary key : order_id)
+column name	datatype
+order_id	int
+product_id	varchar(20)
+category	varchar(10)
+unit_price	int
+quantity	int
+
+Expected Output: 
+category	product_id
+Footwear	floaters-3421
+Furniture	Table-3421
+
+SOLUTION:
+
+WITH hero_products(category,product_id,d_r) AS
+(
+    SELECT 
+        category,
+        product_id,
+        DENSE_RANK() 
+        OVER(
+            PARTITION BY category 
+            ORDER BY SUM(quantity) DESC,
+            SUM(quantity * unit_price) DESC)
+    FROM orders
+    GROUP BY category, product_id
+)
+
+SELECT 
+    category,
+    product_id
+FROM hero_products
+WHERE d_r = 1
+
