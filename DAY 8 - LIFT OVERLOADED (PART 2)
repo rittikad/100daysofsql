@@ -1,0 +1,45 @@
+8 - Lift Overloaded (Part 2)
+
+You are given a table of list of lifts , their maximum capacity and people along with their weight and gender who wants to enter into it. You need to make sure maximum people enter into the lift without lift getting overloaded but you need to give preference to female passengers first.
+
+For each lift find the comma separated list of people who can be accomodated. The comma separated list should have female first and then people in the order of their weight in increasing order.
+
+Table: lifts (primary key : id)
+column name	datatype
+id 	        int
+capacity_kg 	int
+ 
+Table: lift_passengers(primary key : passenger_name )
+column name	datatype
+passenger_name 	varchar(10)
+weight_kg 	int
+gender 	        varchar(1)
+lift_id 	int
+ 
+Expected Output:
+id	passenger_list
+1	Riti,Adarsh,Dheeraj
+2	Priti,Neha,Himanshi,Vimal
+
+SOLUTION:
+
+WITH liftOverload AS
+(
+    SELECT 
+        id,
+        passenger_name,
+        capacity_kg,
+        SUM(weight_kg) 
+        OVER(PARTITION BY id ORDER BY CASE WHEN gender = 'F' THEN 0 ELSE 1 END, weight_kg) AS running_sum_of_weights 
+    FROM lifts l
+    JOIN lift_passengers lp
+    ON l.id = lp.lift_id
+    GROUP BY id, passenger_name, capacity_kg
+)
+
+SELECT
+    id,
+    GROUP_CONCAT(passenger_name) AS passenger_list
+FROM liftOverload
+WHERE capacity_kg >= running_sum_of_weights
+GROUP BY id;

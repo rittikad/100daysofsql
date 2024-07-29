@@ -1,0 +1,45 @@
+14 - Uber Rides
+
+A profit ride for a Uber driver is considered when the start location and start time of a ride exactly match with the previous ride's end location and end time. 
+
+Write an SQL to calculate total number of rides and total profit rides by each driver.
+
+Table: drivers(primary key : id , start_time )
+column name	datatype
+id 	        varchar(10)
+start_time 	time
+end_time 	time
+start_loc 	varchar(1)
+end_loc 	varchar(1)
+
+Expected output :
+id	total_rides	profit_rides
+dri_1	5	        1
+dri_2	2	        0
+
+SOLUTION:
+
+WITH profitRides AS 
+(
+    SELECT 
+    id,
+    LAG(end_time) OVER(PARTITION BY id) AS previous_ride_end_time,
+    LAG(end_loc) OVER(PARTITION BY id) AS previous_ride_end_loc,
+    start_time,
+    start_loc
+FROM drivers
+)
+
+SELECT 
+    id,
+    COUNT(*) AS total_rides,
+    SUM
+    (
+        CASE 
+            WHEN start_loc = previous_ride_end_loc AND
+            start_time = previous_ride_end_time THEN 1
+            ELSE 0
+        END
+    ) AS profit_rides
+FROM profitRides
+GROUP BY id;
