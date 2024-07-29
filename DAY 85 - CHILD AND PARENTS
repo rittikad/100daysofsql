@@ -1,0 +1,61 @@
+85 - Child and Parents
+
+You are tasked to determine the mother and father's name for each child based on the given data. The people table provides information about individuals, including their names and genders. The relations table specifies parent-child relationships, linking each child (c_id) to their parent (p_id). Each parent is identified by their ID, and their gender is used to distinguish between mothers (F) and fathers (M).
+
+Write an SQL query to retrieve the names of each child along with the names of their respective mother and father, if available. If a child has only one parent listed in the relations table, the query should still include that parent's name and leave the other parent's name as NULL. Order the output by child name.
+
+Tables: 
+people(id, name, gender)
+relations (c_id,p_id)
+
+Expected Output:
+child_name	mother_name	  father_name
+Dimartino	Hansard	 
+Hawbaker	Days	          Blackston
+Keffer	        Hansel	          Canty
+Mozingo	        Criss	          Nolf
+Waugh	 	                  Tong
+
+SOLUTION:
+
+WITH MotherChildRelation AS 
+(
+    SELECT 
+        name AS child_name,
+        (SELECT
+            CASE
+                WHEN gender = 'F' THEN name
+            END
+        FROM people 
+        WHERE id = p_id) AS mother_name
+    FROM people p
+    JOIN relations r
+    ON id = c_id
+    GROUP BY child_name
+    ORDER BY child_name
+),
+
+FatherChildRelation AS 
+(
+    SELECT 
+        name AS child_name,
+        (SELECT
+            CASE
+                WHEN gender = 'M' THEN name
+            END
+        FROM people 
+        WHERE id = p_id) AS father_name
+    FROM people p
+    RIGHT JOIN relations r
+    ON id = c_id
+    GROUP BY child_name
+    ORDER BY child_name
+)
+
+SELECT
+    mcr.child_name,
+    mother_name,
+    father_name
+FROM MotherChildRelation mcr
+JOIN FatherChildRelation fcr
+ON mcr.child_name = fcr.child_name;
