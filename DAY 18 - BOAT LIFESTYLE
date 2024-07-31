@@ -1,0 +1,59 @@
+18 - boAt Lifestyle
+
+boAt Lifestyle is focusing on influencer marketing to build and scale their brand. They want to partner with power creators for their upcoming campaigns. The creators should satisy below conditions to qualify :
+
+1 - They should have 100k+ followers on atleast 2 social media platforms and
+
+2 - They should have atleast 50k+ views on their latest YouTube video.
+
+Write an SQL to get creator id and name satisfying above conditions.
+
+Table: creators(primary key : order_id)
+column name	datatype
+id 	        int
+name 	        varchar(10)
+platform 	varchar(10)
+followers 	int
+
+Table: youtube_videos(primary key : order_id)
+column name	datatype
+id 	        int
+creator_id 	int
+publish_date 	date
+views	        int
+
+Expected Output:
+id	name
+102	Dhruv
+
+SOLUTION:
+
+WITH CTE AS
+(
+    SELECT 
+        c.id,
+        name,
+        views,
+        ROW_NUMBER() OVER(PARTITION BY creator_id ORDER BY publish_date DESC) AS recent_yt_video_rank
+    FROM creators c
+    JOIN youtube_videos yt
+    ON c.id = yt.creator_id
+),
+
+CTE2 AS 
+(
+    SELECT 
+        id
+    FROM creators c
+    WHERE followers >= 100000
+    GROUP BY id
+    HAVING COUNT(*) > 1
+)
+
+SELECT 
+   CTE.id,
+   CTE.name
+FROM CTE
+JOIN CTE2 ON
+CTE.id =  CTE2.id
+WHERE recent_yt_video_rank = 1 AND views >= 50000
