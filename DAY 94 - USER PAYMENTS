@@ -1,0 +1,58 @@
+94 - User Payments
+
+You are provided with two tables, payments and users. The payments table contains records of transactions between users, with a column payment_state indicating whether the payment was successful or failed. The users table contains information about user sign-up dates.
+
+Your task is to determine the customers who meet the following criterian within 30 days of signup.
+
+1- customer should not have more than 1 failed transactions.
+
+2- customer should have sent payments atleast 2 times. 
+
+3- customer should have a combined successful sending and receiving volume exceeding amount of 20000
+
+Output should display user_id and total transaction amount combined(failed/success) within 30 days of signup. Order by customer id.
+
+Tables: 
+users (id, signup_date)
+payments (sender_id, recipient_id, payment_date, state, amount)
+
+Expected Output:
+
+user_id	total_transaction
+2	34000
+
+SOLUTION:
+
+WITH SentUserPayments AS
+(
+    SELECT
+        id,
+        SUM(CASE WHEN state = 'failed' THEN 1 ELSE 0 END) AS number_of_failed_transactions,
+        SUM(CASE WHEN payment_date IS NOT NULL THEN 1 ELSE 0 END) AS number_of_sent_payments,
+        SUM(CASE WHEN state = 'success' THEN amount ELSE 0 END) AS successful_sending_amount
+    FROM users u
+    JOIN payments p
+    ON u.id = p.sender_id
+    WHERE payment_date > signup_date AND payment_date <= DATE(signup_date, '+30 days')
+    GROUP BY id
+    HAVING number_of_failed_transactions <= 1 AND number_of_sent_payments >= 2
+),
+ReceiverUserPayments AS
+(
+    SELECT
+        id,
+        SUM(CASE WHEN state = 'success' THEN amount ELSE 0 END) AS successful_receiving_amount
+    FROM users u
+    JOIN payments p
+    ON u.id = p.recipient_id
+    WHERE payment_date > signup_date AND payment_date <= DATE(signup_date, '+30 days')
+    GROUP BY id
+)
+
+SELECT 
+    sup.id,
+    successful_sending_amount + successful_receiving_amount AS total_transactions
+FROM ReceiverUserPayments rup
+JOIN SentUserPayments sup
+ON rup.id = sup.id
+WHERE total_transactions > 20000;
